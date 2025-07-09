@@ -1,13 +1,25 @@
 export const getToken = (): string | null => {
-  const user = localStorage.getItem('user');
-  if (user) {
-    try {
-      const userData = JSON.parse(user);
-      return userData?.token || null;
-    } catch (error) {
-      console.error('Failed to parse user data from localStorage', error);
-      return null;
-    }
-  }
-  return null;
-}; 
+  return localStorage.getItem('access_token');
+};
+
+export const setToken = (token: string): void => {
+  localStorage.setItem('access_token', token);
+};
+
+export const removeToken = (): void => {
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
+};
+
+export const getRefreshToken = (): string | null => {
+  return localStorage.getItem('refresh_token');
+};
+
+export const setRefreshToken = (token: string): void => {
+  localStorage.setItem('refresh_token', token);
+};
+
+export const isAuthenticated = (): boolean => {
+  const token = getToken();
+  return !!token;
+};
