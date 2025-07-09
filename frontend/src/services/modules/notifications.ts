@@ -1,4 +1,4 @@
-import { apiService } from '../api.js';
+import api from '../api.js';
 
 export interface Notification {
   id: string;
@@ -20,38 +20,38 @@ export interface CreateNotificationData {
 
 export const notificationsApi = {
   async getAll(): Promise<Notification[]> {
-    return apiService.get('/notifications');
+    return api.get('/notifications');
   },
 
   async getUnread(): Promise<Notification[]> {
-    return apiService.get('/notifications?unread=true');
+    return api.get('/notifications?unread=true');
   },
 
   async getById(id: string): Promise<Notification> {
-    return apiService.get(`/notifications/${id}`);
+    return api.get(`/notifications/${id}`);
   },
 
   async markAsRead(id: string): Promise<Notification> {
-    return apiService.patch(`/notifications/${id}/read`);
+    return api.patch(`/notifications/${id}/read`);
   },
 
   async markAllAsRead(): Promise<void> {
-    return apiService.patch('/notifications/read-all');
+    return api.patch('/notifications/read-all');
   },
 
   async delete(id: string): Promise<void> {
-    return apiService.delete(`/notifications/${id}`);
+    return api.delete(`/notifications/${id}`);
   },
 
   async deleteAll(): Promise<void> {
-    return apiService.delete('/notifications');
+    return api.delete('/notifications');
   },
 
   async getUnreadCount(): Promise<number> {
-    return apiService.get('/notifications/unread-count');
+    return api.get('/notifications/unread-count');
   },
 
   async create(data: CreateNotificationData): Promise<Notification> {
-    return apiService.post('/notifications', data);
+    return api.post('/notifications', data);
   },
 };

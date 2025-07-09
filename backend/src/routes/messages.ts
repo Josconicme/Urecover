@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { supabase } from '../config/supabase.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
@@ -6,7 +6,7 @@ import { AuthenticatedRequest } from '../middleware/auth.js';
 const router = Router();
 
 // Get user's conversations
-router.get('/conversations', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/conversations', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { data, error } = await supabase
     .from('messages')
     .select(`
@@ -46,7 +46,7 @@ router.get('/conversations', asyncHandler(async (req: AuthenticatedRequest, res)
 }));
 
 // Get messages in a conversation
-router.get('/conversations/:id/messages', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/conversations/:id/messages', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
 
   const { data, error } = await supabase
@@ -64,7 +64,7 @@ router.get('/conversations/:id/messages', asyncHandler(async (req: Authenticated
 }));
 
 // Send a message
-router.post('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.post('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const messageData = {
     ...req.body,
     sender_id: req.user?.id,
@@ -85,7 +85,7 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Mark message as read
-router.patch('/:id/read', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.patch('/:id/read', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
 
   const { data, error } = await supabase
@@ -104,7 +104,7 @@ router.patch('/:id/read', asyncHandler(async (req: AuthenticatedRequest, res) =>
 }));
 
 // Mark conversation as read
-router.patch('/conversations/:id/read', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.patch('/conversations/:id/read', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
 
   const { error } = await supabase
@@ -121,7 +121,7 @@ router.patch('/conversations/:id/read', asyncHandler(async (req: AuthenticatedRe
 }));
 
 // Get unread message count
-router.get('/unread-count', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/unread-count', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { count, error } = await supabase
     .from('messages')
     .select('*', { count: 'exact', head: true })

@@ -46,7 +46,7 @@ app.use(helmet({
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173'],
+  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173', 'http://10.255.247.55:5173'],
   credentials: true,
   optionsSuccessStatus: 200,
 };

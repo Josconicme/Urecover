@@ -14,6 +14,7 @@ import {
   adminApi
 } from '../services/api';
 import { toast } from 'react-hot-toast';
+import { getProfile } from '../services/modules/auth';
 
 export function TestingDashboard() {
   const { user, profile } = useAuthContext();
@@ -44,7 +45,7 @@ export function TestingDashboard() {
     setTestResults({});
 
     // Test Authentication APIs
-    await runTest('Auth Profile', () => authApi.getProfile());
+    await runTest('Auth Profile', () => getProfile());
 
     // Test Counsellors APIs
     await runTest('Get Counsellors', () => counsellorsApi.getAll());

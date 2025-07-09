@@ -1,4 +1,4 @@
-import { apiService } from '../api.js';
+import api from '../api.js';
 
 export interface Goal {
   id: string;
@@ -27,46 +27,46 @@ export interface CreateGoalData {
 
 export const goalsApi = {
   async getAll(): Promise<Goal[]> {
-    return apiService.get('/goals');
+    return api.get('/goals');
   },
 
   async getActive(): Promise<Goal[]> {
-    return apiService.get('/goals?completed=false');
+    return api.get('/goals?completed=false');
   },
 
   async getCompleted(): Promise<Goal[]> {
-    return apiService.get('/goals?completed=true');
+    return api.get('/goals?completed=true');
   },
 
   async getById(id: string): Promise<Goal> {
-    return apiService.get(`/goals/${id}`);
+    return api.get(`/goals/${id}`);
   },
 
   async create(data: CreateGoalData): Promise<Goal> {
-    return apiService.post('/goals', data);
+    return api.post('/goals', data);
   },
 
   async update(id: string, updates: Partial<Goal>): Promise<Goal> {
-    return apiService.put(`/goals/${id}`, updates);
+    return api.put(`/goals/${id}`, updates);
   },
 
   async updateProgress(id: string, currentValue: number): Promise<Goal> {
-    return apiService.patch(`/goals/${id}/progress`, { current_value: currentValue });
+    return api.patch(`/goals/${id}/progress`, { current_value: currentValue });
   },
 
-  async markCompleted(id: string): Promise<Goal> {
-    return apiService.patch(`/goals/${id}/complete`);
+  async complete(id: string): Promise<Goal> {
+    return api.patch(`/goals/${id}/complete`);
   },
 
-  async markIncomplete(id: string): Promise<Goal> {
-    return apiService.patch(`/goals/${id}/incomplete`);
+  async incomplete(id: string): Promise<Goal> {
+    return api.patch(`/goals/${id}/incomplete`);
   },
 
   async delete(id: string): Promise<void> {
-    return apiService.delete(`/goals/${id}`);
+    return api.delete(`/goals/${id}`);
   },
 
   async getStats(): Promise<any> {
-    return apiService.get('/goals/stats');
+    return api.get('/goals/stats');
   },
 };

@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { supabase } from '../config/supabase.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
@@ -6,7 +6,7 @@ import { AuthenticatedRequest } from '../middleware/auth.js';
 const router = Router();
 
 // Get all blog posts
-router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { published, featured } = req.query;
   
   let query = supabase
@@ -32,7 +32,7 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Get blog post by ID
-router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
 
   const { data, error } = await supabase
@@ -49,7 +49,7 @@ router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Get blog post by slug
-router.get('/slug/:slug', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/slug/:slug', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { slug } = req.params;
 
   const { data, error } = await supabase
@@ -66,7 +66,7 @@ router.get('/slug/:slug', asyncHandler(async (req: AuthenticatedRequest, res) =>
 }));
 
 // Increment views
-router.patch('/:id/views', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.patch('/:id/views', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
 
   const { data, error } = await supabase

@@ -1,4 +1,4 @@
-import { apiService } from '../api.js';
+import api from '../api.js';
 
 export interface Testimonial {
   id: string;
@@ -23,50 +23,50 @@ export interface CreateTestimonialData {
 
 export const testimonialsApi = {
   async getAll(): Promise<Testimonial[]> {
-    return apiService.get('/testimonials');
+    return api.get('/testimonials');
   },
 
   async getApproved(): Promise<Testimonial[]> {
-    return apiService.get('/testimonials?approved=true');
+    return api.get('/testimonials?approved=true');
   },
 
   async getFeatured(): Promise<Testimonial[]> {
-    return apiService.get('/testimonials?featured=true');
+    return api.get('/testimonials?featured=true');
   },
 
   async getById(id: string): Promise<Testimonial> {
-    return apiService.get(`/testimonials/${id}`);
+    return api.get(`/testimonials/${id}`);
   },
 
   async getByCounsellor(counsellorId: string): Promise<Testimonial[]> {
-    return apiService.get(`/testimonials?counsellor_id=${counsellorId}`);
+    return api.get(`/testimonials?counsellor_id=${counsellorId}`);
   },
 
   async create(data: CreateTestimonialData): Promise<Testimonial> {
-    return apiService.post('/testimonials', data);
+    return api.post('/testimonials', data);
   },
 
   async update(id: string, updates: Partial<Testimonial>): Promise<Testimonial> {
-    return apiService.put(`/testimonials/${id}`, updates);
+    return api.put(`/testimonials/${id}`, updates);
   },
 
   async delete(id: string): Promise<void> {
-    return apiService.delete(`/testimonials/${id}`);
+    return api.delete(`/testimonials/${id}`);
   },
 
   async approve(id: string): Promise<Testimonial> {
-    return apiService.patch(`/testimonials/${id}/approve`);
+    return api.patch(`/testimonials/${id}/approve`);
   },
 
   async reject(id: string): Promise<Testimonial> {
-    return apiService.patch(`/testimonials/${id}/reject`);
+    return api.patch(`/testimonials/${id}/reject`);
   },
 
   async feature(id: string): Promise<Testimonial> {
-    return apiService.patch(`/testimonials/${id}/feature`);
+    return api.patch(`/testimonials/${id}/feature`);
   },
 
   async unfeature(id: string): Promise<Testimonial> {
-    return apiService.patch(`/testimonials/${id}/unfeature`);
+    return api.patch(`/testimonials/${id}/unfeature`);
   },
 };

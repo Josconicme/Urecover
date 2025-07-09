@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { supabase } from '../config/supabase.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
@@ -6,7 +6,7 @@ import { AuthenticatedRequest } from '../middleware/auth.js';
 const router = Router();
 
 // Get user's notifications
-router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { unread } = req.query;
   
   let query = supabase
@@ -29,7 +29,7 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Get notification by ID
-router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
 
   const { data, error } = await supabase
@@ -47,7 +47,7 @@ router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Mark notification as read
-router.patch('/:id/read', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.patch('/:id/read', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
 
   const { data, error } = await supabase
@@ -66,7 +66,7 @@ router.patch('/:id/read', asyncHandler(async (req: AuthenticatedRequest, res) =>
 }));
 
 // Mark all notifications as read
-router.patch('/read-all', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.patch('/read-all', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { error } = await supabase
     .from('notifications')
     .update({ is_read: true })
@@ -81,7 +81,7 @@ router.patch('/read-all', asyncHandler(async (req: AuthenticatedRequest, res) =>
 }));
 
 // Delete notification
-router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
 
   const { error } = await supabase
@@ -98,7 +98,7 @@ router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Get unread notification count
-router.get('/unread-count', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/unread-count', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { count, error } = await supabase
     .from('notifications')
     .select('*', { count: 'exact', head: true })

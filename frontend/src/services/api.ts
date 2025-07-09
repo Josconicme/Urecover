@@ -1,5 +1,6 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { toast } from 'react-hot-toast';
+import { getToken } from '../utils/auth';
 
 // Types
 export interface ApiResponse<T = any> {
@@ -39,10 +40,23 @@ class ApiService {
     // Request interceptor
     this.api.interceptors.request.use(
       (config) => {
-        // Add auth token if available
-        const token = localStorage.getItem('access_token');
+        const token = getToken();
         if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
+          config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
+
+    // Add a request interceptor to include the token in headers
+    this.api.interceptors.request.use(
+      (config) => {
+        const token = getToken();
+        if (token) {
+          config.headers['Authorization'] = `Bearer ${token}`;
         }
         return config;
       },
@@ -162,10 +176,31 @@ class ApiService {
     const response = await this.api.get('/health');
     return response.data;
   }
+
+  getApi(): AxiosInstance {
+    return this.api;
+  }
 }
 
 // Create singleton instance
-export const apiService = new ApiService();
+const apiService = new ApiService();
+const api = apiService.getApi();
+
+// Add a request interceptor to include the token in headers
+api.interceptors.request.use(
+  (config) => {
+    const token = getToken();
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+export default api;
 
 // Export specific API modules
 export * from './modules/auth';

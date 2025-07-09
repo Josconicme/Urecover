@@ -1,4 +1,4 @@
-import { apiService } from '../api.js';
+import api from '../api.js';
 
 export interface Message {
   id: string;
@@ -29,38 +29,38 @@ export interface SendMessageData {
 
 export const messagesApi = {
   async getConversations(): Promise<Conversation[]> {
-    return apiService.get('/messages/conversations');
+    return api.get('/messages/conversations');
   },
 
   async getConversation(id: string): Promise<Conversation> {
-    return apiService.get(`/messages/conversations/${id}`);
+    return api.get(`/messages/conversations/${id}`);
   },
 
   async getMessages(conversationId: string): Promise<Message[]> {
-    return apiService.get(`/messages/conversations/${conversationId}/messages`);
+    return api.get(`/messages/conversations/${conversationId}/messages`);
   },
 
   async sendMessage(data: SendMessageData): Promise<Message> {
-    return apiService.post('/messages', data);
+    return api.post('/messages', data);
   },
 
   async markAsRead(messageId: string): Promise<void> {
-    return apiService.patch(`/messages/${messageId}/read`);
+    return api.patch(`/messages/${messageId}/read`);
   },
 
   async markConversationAsRead(conversationId: string): Promise<void> {
-    return apiService.patch(`/messages/conversations/${conversationId}/read`);
+    return api.patch(`/messages/conversations/${conversationId}/read`);
   },
 
   async createConversation(participantId: string): Promise<Conversation> {
-    return apiService.post('/messages/conversations', { participant_id: participantId });
+    return api.post('/messages/conversations', { participant_id: participantId });
   },
 
   async deleteMessage(id: string): Promise<void> {
-    return apiService.delete(`/messages/${id}`);
+    return api.delete(`/messages/${id}`);
   },
 
   async getUnreadCount(): Promise<number> {
-    return apiService.get('/messages/unread-count');
+    return api.get('/messages/unread-count');
   },
 };

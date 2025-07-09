@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { supabase } from '../config/supabase.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
@@ -6,7 +6,7 @@ import { AuthenticatedRequest } from '../middleware/auth.js';
 const router = Router();
 
 // Get user's appointments
-router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { status } = req.query;
   
   let query = supabase
@@ -38,7 +38,7 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Get appointment by ID
-router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
 
   const { data, error } = await supabase
@@ -71,11 +71,11 @@ router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
     return res.status(403).json({ error: 'Unauthorized to view this appointment' });
   }
 
-  res.json({ data });
+  return res.json({ data });
 }));
 
 // Create new appointment
-router.post('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.post('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const appointmentData = {
     ...req.body,
     user_id: req.user?.id,
@@ -97,7 +97,7 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Update appointment
-router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
   const updates = {
     ...req.body,
@@ -119,7 +119,7 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Cancel appointment
-router.patch('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.patch('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
   const updates = {
     ...req.body,

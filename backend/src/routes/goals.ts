@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { supabase } from '../config/supabase.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
@@ -6,7 +6,7 @@ import { AuthenticatedRequest } from '../middleware/auth.js';
 const router = Router();
 
 // Get user's goals
-router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { completed } = req.query;
   
   let query = supabase
@@ -29,7 +29,7 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Get goal by ID
-router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
 
   const { data, error } = await supabase
@@ -47,7 +47,7 @@ router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Create goal
-router.post('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.post('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const goalData = {
     ...req.body,
     user_id: req.user?.id,
@@ -69,7 +69,7 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Update goal
-router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
   const updates = {
     ...req.body,
@@ -92,7 +92,7 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Update goal progress
-router.patch('/:id/progress', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.patch('/:id/progress', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
   const { current_value } = req.body;
 
@@ -115,7 +115,7 @@ router.patch('/:id/progress', asyncHandler(async (req: AuthenticatedRequest, res
 }));
 
 // Mark goal as completed
-router.patch('/:id/complete', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.patch('/:id/complete', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
 
   const { data, error } = await supabase
@@ -137,7 +137,7 @@ router.patch('/:id/complete', asyncHandler(async (req: AuthenticatedRequest, res
 }));
 
 // Delete goal
-router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
 
   const { error } = await supabase
@@ -154,7 +154,7 @@ router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Get goal stats
-router.get('/stats', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/stats', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { data, error } = await supabase
     .from('goals')
     .select('is_completed, target_value, current_value')

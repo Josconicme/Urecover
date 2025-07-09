@@ -114,3 +114,13 @@ Thumbs.db
 # Supabase
 .branches
 .temp
+
+# dotenv environment variables file
+.env*.local
+
+# Supabase
+supabase/
+backend/config.json
+
+# Drizzle
+/drizzle

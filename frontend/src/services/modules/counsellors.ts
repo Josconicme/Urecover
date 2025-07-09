@@ -1,4 +1,5 @@
-import { apiService } from '../api.js';
+import api from '../api.js';
+import { Counsellor, PaginatedResponse } from '../../types';
 
 export interface Counsellor {
   id: string;
@@ -22,22 +23,26 @@ export interface Counsellor {
 
 export const counsellorsApi = {
   async getAll(): Promise<Counsellor[]> {
-    return apiService.get('/counsellors');
+    return api.get('/counsellors');
   },
 
   async getById(id: string): Promise<Counsellor> {
-    return apiService.get(`/counsellors/${id}`);
+    return api.get(`/counsellors/${id}`);
   },
 
   async getAvailable(): Promise<Counsellor[]> {
-    return apiService.get('/counsellors?available=true');
+    return api.get('/counsellors?available=true');
   },
 
   async searchBySpecialty(specialty: string): Promise<Counsellor[]> {
-    return apiService.get(`/counsellors?specialty=${encodeURIComponent(specialty)}`);
+    return api.get(`/counsellors?specialty=${encodeURIComponent(specialty)}`);
   },
 
   async updateProfile(id: string, updates: Partial<Counsellor>): Promise<Counsellor> {
-    return apiService.put(`/counsellors/${id}`, updates);
+    return api.put(`/counsellors/${id}`, updates);
   },
+};
+
+export const getCounsellors = async (params: { page?: number; limit?: number }): Promise<PaginatedResponse<Counsellor>> => {
+  return api.get<PaginatedResponse<Counsellor>>('/counsellors', { params });
 };

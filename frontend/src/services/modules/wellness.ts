@@ -1,4 +1,5 @@
-import { apiService } from '../api.js';
+import api from '../api.js';
+import { WellnessEntry } from '../../types';
 
 export interface WellnessEntry {
   id: string;
@@ -27,30 +28,30 @@ export interface CreateWellnessEntryData {
 
 export const wellnessApi = {
   async getAll(): Promise<WellnessEntry[]> {
-    return apiService.get('/wellness');
+    return api.get<WellnessEntry[]>('/wellness');
   },
 
   async getById(id: string): Promise<WellnessEntry> {
-    return apiService.get(`/wellness/${id}`);
+    return api.get<WellnessEntry>(`/wellness/${id}`);
   },
 
   async create(data: CreateWellnessEntryData): Promise<WellnessEntry> {
-    return apiService.post('/wellness', data);
+    return api.post<WellnessEntry>('/wellness', data);
   },
 
   async update(id: string, updates: Partial<WellnessEntry>): Promise<WellnessEntry> {
-    return apiService.put(`/wellness/${id}`, updates);
+    return api.put<WellnessEntry>(`/wellness/${id}`, updates);
   },
 
   async delete(id: string): Promise<void> {
-    return apiService.delete(`/wellness/${id}`);
+    return api.delete(`/wellness/${id}`);
   },
 
   async getByDateRange(startDate: string, endDate: string): Promise<WellnessEntry[]> {
-    return apiService.get(`/wellness?start_date=${startDate}&end_date=${endDate}`);
+    return api.get<WellnessEntry[]>(`/wellness?start_date=${startDate}&end_date=${endDate}`);
   },
 
   async getStats(): Promise<any> {
-    return apiService.get('/wellness/stats');
+    return api.get('/wellness/stats');
   },
 };

@@ -1,4 +1,5 @@
-import { apiService } from '../api.js';
+import api from '../api.js';
+import { Blog } from '../../types';
 
 export interface BlogPost {
   id: string;
@@ -32,46 +33,50 @@ export interface CreateBlogPostData {
 
 export const blogsApi = {
   async getAll(): Promise<BlogPost[]> {
-    return apiService.get('/blogs');
+    return api.get<BlogPost[]>('/blogs');
   },
 
   async getPublished(): Promise<BlogPost[]> {
-    return apiService.get('/blogs?published=true');
+    return api.get<BlogPost[]>('/blogs?published=true');
   },
 
   async getFeatured(): Promise<BlogPost[]> {
-    return apiService.get('/blogs?featured=true');
+    return api.get<BlogPost[]>('/blogs?featured=true');
   },
 
   async getById(id: string): Promise<BlogPost> {
-    return apiService.get(`/blogs/${id}`);
+    return api.get<BlogPost>(`/blogs/${id}`);
   },
 
   async getBySlug(slug: string): Promise<BlogPost> {
-    return apiService.get(`/blogs/slug/${slug}`);
+    return api.get<BlogPost>(`/blogs/slug/${slug}`);
   },
 
   async create(data: CreateBlogPostData): Promise<BlogPost> {
-    return apiService.post('/blogs', data);
+    return api.post<BlogPost>('/blogs', data);
   },
 
   async update(id: string, updates: Partial<BlogPost>): Promise<BlogPost> {
-    return apiService.put(`/blogs/${id}`, updates);
+    return api.put<BlogPost>(`/blogs/${id}`, updates);
   },
 
   async delete(id: string): Promise<void> {
-    return apiService.delete(`/blogs/${id}`);
+    return api.delete<void>(`/blogs/${id}`);
   },
 
   async publish(id: string): Promise<BlogPost> {
-    return apiService.patch(`/blogs/${id}/publish`);
+    return api.patch<BlogPost>(`/blogs/${id}/publish`);
   },
 
   async unpublish(id: string): Promise<BlogPost> {
-    return apiService.patch(`/blogs/${id}/unpublish`);
+    return api.patch<BlogPost>(`/blogs/${id}/unpublish`);
   },
 
   async incrementViews(id: string): Promise<void> {
-    return apiService.patch(`/blogs/${id}/views`);
+    return api.patch<void>(`/blogs/${id}/views`);
   },
+};
+
+export const getBlogs = async (): Promise<Blog[]> => {
+  return api.get<Blog[]>('/blogs');
 };

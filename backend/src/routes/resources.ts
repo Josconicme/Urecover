@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { supabase } from '../config/supabase.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
@@ -6,7 +6,7 @@ import { AuthenticatedRequest } from '../middleware/auth.js';
 const router = Router();
 
 // Get all resources
-router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { category, type, premium } = req.query;
   
   let query = supabase
@@ -36,7 +36,7 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Get resource by ID
-router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
 
   const { data, error } = await supabase
@@ -53,7 +53,7 @@ router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Increment download count
-router.patch('/:id/download', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.patch('/:id/download', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
 
   const { data: resource } = await supabase

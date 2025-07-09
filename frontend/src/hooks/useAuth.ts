@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { authApi, User, Profile, AuthResponse } from '../services/modules/auth';
+import { signin, signup, getProfile, updateProfile, signout } from '../services/modules/auth';
 import { toast } from 'react-hot-toast';
 
 interface AuthState {
@@ -25,7 +25,7 @@ export function useAuth() {
     try {
       const token = localStorage.getItem('access_token');
       if (token) {
-        const profile = await authApi.getProfile();
+        const profile = await getProfile();
         setState(prev => ({
           ...prev,
           user: { id: profile.id, email: profile.email, role: profile.role },
@@ -47,14 +47,14 @@ export function useAuth() {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
       
-      const response = await authApi.signin({ email, password });
+      const response = await signin({ email, password });
       
       // Store tokens
       localStorage.setItem('access_token', response.session.access_token);
       localStorage.setItem('refresh_token', response.session.refresh_token);
       
       // Get profile
-      const profile = await authApi.getProfile();
+      const profile = await getProfile();
       
       setState(prev => ({
         ...prev,
@@ -77,7 +77,7 @@ export function useAuth() {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
       
-      const response = await authApi.signup({ email, password, fullName });
+      const response = await signup({ email, password, fullName });
       
       // Store tokens if provided
       if (response.session) {
@@ -85,7 +85,7 @@ export function useAuth() {
         localStorage.setItem('refresh_token', response.session.refresh_token);
         
         // Get profile
-        const profile = await authApi.getProfile();
+        const profile = await getProfile();
         
         setState(prev => ({
           ...prev,
@@ -109,7 +109,7 @@ export function useAuth() {
 
   const signOut = async () => {
     try {
-      await authApi.signout();
+      await signout();
     } catch (error) {
       console.error('Sign out error:', error);
     } finally {
@@ -127,7 +127,7 @@ export function useAuth() {
 
   const updateProfile = async (updates: Partial<Profile>) => {
     try {
-      const updatedProfile = await authApi.updateProfile(updates);
+      const updatedProfile = await updateProfile(updates);
       setState(prev => ({
         ...prev,
         profile: updatedProfile,

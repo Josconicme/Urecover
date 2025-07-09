@@ -1,18 +1,5 @@
-import { apiService } from '../api.js';
-
-export interface Appointment {
-  id: string;
-  user_id: string;
-  counsellor_id: string;
-  appointment_date: string;
-  duration_minutes: number;
-  session_type: 'video' | 'audio' | 'chat' | 'in-person';
-  status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled' | 'no-show';
-  notes?: string;
-  meeting_link?: string;
-  created_at: string;
-  updated_at: string;
-}
+import api from '../api.js';
+import { Appointment } from '../../types';
 
 export interface CreateAppointmentData {
   counsellor_id: string;
@@ -22,32 +9,40 @@ export interface CreateAppointmentData {
   notes?: string;
 }
 
+export const getAppointments = async (): Promise<Appointment[]> => {
+  return api.get<Appointment[]>('/appointments');
+};
+
+export const createAppointment = async (payload: Partial<Appointment>): Promise<Appointment> => {
+  return api.post<Appointment>('/appointments', payload);
+};
+
 export const appointmentsApi = {
   async getAll(): Promise<Appointment[]> {
-    return apiService.get('/appointments');
+    return api.get('/appointments');
   },
 
   async getById(id: string): Promise<Appointment> {
-    return apiService.get(`/appointments/${id}`);
+    return api.get(`/appointments/${id}`);
   },
 
   async create(data: CreateAppointmentData): Promise<Appointment> {
-    return apiService.post('/appointments', data);
+    return api.post('/appointments', data);
   },
 
   async update(id: string, updates: Partial<Appointment>): Promise<Appointment> {
-    return apiService.put(`/appointments/${id}`, updates);
+    return api.put(`/appointments/${id}`, updates);
   },
 
   async cancel(id: string): Promise<void> {
-    return apiService.patch(`/appointments/${id}`, { status: 'cancelled' });
+    return api.patch(`/appointments/${id}`, { status: 'cancelled' });
   },
 
   async getUpcoming(): Promise<Appointment[]> {
-    return apiService.get('/appointments?status=scheduled,confirmed');
+    return api.get('/appointments?status=scheduled,confirmed');
   },
 
   async getPast(): Promise<Appointment[]> {
-    return apiService.get('/appointments?status=completed,cancelled,no-show');
+    return api.get('/appointments?status=completed,cancelled,no-show');
   },
 };

@@ -1,4 +1,4 @@
-import { apiService } from '../api.js';
+import api from '../api.js';
 
 export interface Article {
   id: string;
@@ -29,50 +29,50 @@ export interface CreateArticleData {
 
 export const articlesApi = {
   async getAll(): Promise<Article[]> {
-    return apiService.get('/articles');
+    return api.get('/articles');
   },
 
   async getPublished(): Promise<Article[]> {
-    return apiService.get('/articles?published=true');
+    return api.get('/articles?published=true');
   },
 
   async getById(id: string): Promise<Article> {
-    return apiService.get(`/articles/${id}`);
+    return api.get(`/articles/${id}`);
   },
 
   async getBySlug(slug: string): Promise<Article> {
-    return apiService.get(`/articles/slug/${slug}`);
+    return api.get(`/articles/slug/${slug}`);
   },
 
   async getByCategory(category: string): Promise<Article[]> {
-    return apiService.get(`/articles?category=${encodeURIComponent(category)}`);
+    return api.get(`/articles?category=${encodeURIComponent(category)}`);
   },
 
   async getByDifficulty(level: string): Promise<Article[]> {
-    return apiService.get(`/articles?difficulty=${level}`);
+    return api.get(`/articles?difficulty=${level}`);
   },
 
   async create(data: CreateArticleData): Promise<Article> {
-    return apiService.post('/articles', data);
+    return api.post('/articles', data);
   },
 
   async update(id: string, updates: Partial<Article>): Promise<Article> {
-    return apiService.put(`/articles/${id}`, updates);
+    return api.put(`/articles/${id}`, updates);
   },
 
   async delete(id: string): Promise<void> {
-    return apiService.delete(`/articles/${id}`);
+    return api.delete(`/articles/${id}`);
   },
 
   async publish(id: string): Promise<Article> {
-    return apiService.patch(`/articles/${id}/publish`);
+    return api.patch(`/articles/${id}/publish`);
   },
 
   async unpublish(id: string): Promise<Article> {
-    return apiService.patch(`/articles/${id}/unpublish`);
+    return api.patch(`/articles/${id}/unpublish`);
   },
 
   async incrementViews(id: string): Promise<void> {
-    return apiService.patch(`/articles/${id}/views`);
+    return api.patch(`/articles/${id}/views`);
   },
 };

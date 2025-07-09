@@ -197,5 +197,5 @@ export const csrfProtection = (req: Request, res: Response, next: NextFunction) 
     }
   }
 
-  next();
+  return next();
 };

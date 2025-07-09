@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { supabase } from '../config/supabase.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
@@ -6,7 +6,7 @@ import { AuthenticatedRequest } from '../middleware/auth.js';
 const router = Router();
 
 // Get user's wellness entries
-router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { start_date, end_date } = req.query;
   
   let query = supabase
@@ -29,7 +29,7 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Get wellness entry by ID
-router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
 
   const { data, error } = await supabase
@@ -47,7 +47,7 @@ router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Create wellness entry
-router.post('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.post('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const entryData = {
     ...req.body,
     user_id: req.user?.id,
@@ -68,7 +68,7 @@ router.post('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Update wellness entry
-router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
   const updates = req.body;
 
@@ -88,7 +88,7 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Delete wellness entry
-router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
 
   const { error } = await supabase
@@ -105,7 +105,7 @@ router.delete('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Get wellness stats
-router.get('/stats', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/stats', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { data, error } = await supabase
     .from('wellness_entries')
     .select('mood_score, wellness_score, anxiety_level, sleep_hours, exercise_minutes, meditation_minutes')

@@ -1,4 +1,4 @@
-import { apiService } from '../api.js';
+import api from '../api.js';
 
 export interface AdminStats {
   total_users: number;
@@ -31,47 +31,47 @@ export interface ContentModeration {
 
 export const adminApi = {
   async getStats(): Promise<AdminStats> {
-    return apiService.get('/admin/stats');
+    return api.get('/admin/stats');
   },
 
   async getUsers(): Promise<UserManagement[]> {
-    return apiService.get('/admin/users');
+    return api.get('/admin/users');
   },
 
   async getUserById(id: string): Promise<UserManagement> {
-    return apiService.get(`/admin/users/${id}`);
+    return api.get(`/admin/users/${id}`);
   },
 
   async updateUser(id: string, updates: Partial<UserManagement>): Promise<UserManagement> {
-    return apiService.put(`/admin/users/${id}`, updates);
+    return api.put(`/admin/users/${id}`, updates);
   },
 
   async suspendUser(id: string, reason?: string): Promise<void> {
-    return apiService.patch(`/admin/users/${id}/suspend`, { reason });
+    return api.patch(`/admin/users/${id}/suspend`, { reason });
   },
 
   async activateUser(id: string): Promise<void> {
-    return apiService.patch(`/admin/users/${id}/activate`);
+    return api.patch(`/admin/users/${id}/activate`);
   },
 
   async deleteUser(id: string): Promise<void> {
-    return apiService.delete(`/admin/users/${id}`);
+    return api.delete(`/admin/users/${id}`);
   },
 
   async getPendingContent(): Promise<ContentModeration[]> {
-    return apiService.get('/admin/content/pending');
+    return api.get('/admin/content/pending');
   },
 
   async approveContent(type: string, id: string): Promise<void> {
-    return apiService.patch(`/admin/content/${type}/${id}/approve`);
+    return api.patch(`/admin/content/${type}/${id}/approve`);
   },
 
   async rejectContent(type: string, id: string, reason?: string): Promise<void> {
-    return apiService.patch(`/admin/content/${type}/${id}/reject`, { reason });
+    return api.patch(`/admin/content/${type}/${id}/reject`, { reason });
   },
 
   async getSystemLogs(): Promise<any[]> {
-    return apiService.get('/admin/logs');
+    return api.get('/admin/logs');
   },
 
   async exportData(type: string): Promise<Blob> {
@@ -84,7 +84,7 @@ export const adminApi = {
   },
 
   async getAnalytics(period: string): Promise<any> {
-    return apiService.get(`/admin/analytics?period=${period}`);
+    return api.get(`/admin/analytics?period=${period}`);
   },
 
   async sendSystemNotification(data: {
@@ -93,6 +93,6 @@ export const adminApi = {
     target_users?: string[];
     target_roles?: string[];
   }): Promise<void> {
-    return apiService.post('/admin/notifications/system', data);
+    return api.post('/admin/notifications/system', data);
   },
 };

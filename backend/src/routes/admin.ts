@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { requireRole } from '../middleware/auth.js';
 import { supabase } from '../config/supabase.js';
@@ -10,7 +10,7 @@ const router = Router();
 router.use(requireRole(['admin', 'manager']));
 
 // Get admin stats
-router.get('/stats', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/stats', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const [
     { count: totalUsers },
     { count: totalCounsellors },
@@ -39,7 +39,7 @@ router.get('/stats', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Get all users
-router.get('/users', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/users', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
@@ -53,7 +53,7 @@ router.get('/users', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Get user by ID
-router.get('/users/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/users/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
 
   const { data, error } = await supabase
@@ -70,7 +70,7 @@ router.get('/users/:id', asyncHandler(async (req: AuthenticatedRequest, res) => 
 }));
 
 // Update user
-router.put('/users/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.put('/users/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
   const updates = {
     ...req.body,

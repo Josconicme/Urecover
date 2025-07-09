@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { supabase } from '../config/supabase.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
@@ -6,7 +6,7 @@ import { AuthenticatedRequest } from '../middleware/auth.js';
 const router = Router();
 
 // Get all counsellors
-router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { available, specialty } = req.query;
   
   let query = supabase
@@ -32,7 +32,7 @@ router.get('/', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Get counsellor by ID
-router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
 
   const { data, error } = await supabase
@@ -49,7 +49,7 @@ router.get('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
 }));
 
 // Update counsellor profile (counsellors only)
-router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
+router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
   const updates = req.body;
 
@@ -77,7 +77,7 @@ router.put('/:id', asyncHandler(async (req: AuthenticatedRequest, res) => {
     throw new Error(`Error updating counsellor: ${error.message}`);
   }
 
-  res.json({ data, message: 'Counsellor profile updated successfully' });
+  return res.json({ data, message: 'Counsellor profile updated successfully' });
 }));
 
 export default router;
