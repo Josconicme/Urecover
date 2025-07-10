@@ -1,21 +1,11 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { toast } from 'react-hot-toast';
-import { getToken } from '../utils/auth';
 
 // Types
 export interface ApiResponse<T = any> {
-  data: T;
+  data?: T;
   message?: string;
   error?: string;
-}
-
-export interface PaginatedResponse<T> extends ApiResponse<T[]> {
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
 }
 
 class ApiService {
@@ -27,7 +17,7 @@ class ApiService {
     
     this.api = axios.create({
       baseURL: this.baseURL,
-      timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || '10000'),
+      timeout: 10000,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -40,21 +30,7 @@ class ApiService {
     // Request interceptor
     this.api.interceptors.request.use(
       (config) => {
-        const token = getToken();
-        if (token) {
-          config.headers['Authorization'] = `Bearer ${token}`;
-        }
-        return config;
-      },
-      (error) => {
-        return Promise.reject(error);
-      }
-    );
-
-    // Add a request interceptor to include the token in headers
-    this.api.interceptors.request.use(
-      (config) => {
-        const token = getToken();
+        const token = localStorage.getItem('access_token');
         if (token) {
           config.headers['Authorization'] = `Bearer ${token}`;
         }
@@ -68,7 +44,7 @@ class ApiService {
     // Response interceptor
     this.api.interceptors.response.use(
       (response: AxiosResponse) => {
-        return response;
+        return response.data;
       },
       async (error) => {
         const originalRequest = error.config;
@@ -80,16 +56,16 @@ class ApiService {
           try {
             const refreshToken = localStorage.getItem('refresh_token');
             if (refreshToken) {
-              const response = await this.api.post('/auth/refresh', {
+              const response = await axios.post(`${this.baseURL}/auth/refresh`, {
                 refreshToken
               });
 
-              const { access_token, refresh_token } = response.data;
-              localStorage.setItem('access_token', access_token);
-              localStorage.setItem('refresh_token', refresh_token);
+              const { session } = response.data;
+              localStorage.setItem('access_token', session.access_token);
+              localStorage.setItem('refresh_token', session.refresh_token);
 
               // Retry original request
-              originalRequest.headers.Authorization = `Bearer ${access_token}`;
+              originalRequest.headers.Authorization = `Bearer ${session.access_token}`;
               return this.api(originalRequest);
             }
           } catch (refreshError) {
@@ -102,7 +78,7 @@ class ApiService {
         }
 
         // Handle other errors
-        const message = error.response?.data?.message || error.message || 'An error occurred';
+        const message = error.response?.data?.message || error.response?.data?.error || error.message || 'An error occurred';
         
         // Don't show toast for certain errors
         const silentErrors = [401, 403];
@@ -117,64 +93,23 @@ class ApiService {
 
   // Generic HTTP methods
   async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.api.get<ApiResponse<T>>(url, config);
-    return response.data.data || response.data;
+    return this.api.get(url, config);
   }
 
   async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.api.post<ApiResponse<T>>(url, data, config);
-    return response.data.data || response.data;
+    return this.api.post(url, data, config);
   }
 
   async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.api.put<ApiResponse<T>>(url, data, config);
-    return response.data.data || response.data;
+    return this.api.put(url, data, config);
   }
 
   async patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.api.patch<ApiResponse<T>>(url, data, config);
-    return response.data.data || response.data;
+    return this.api.patch(url, data, config);
   }
 
   async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.api.delete<ApiResponse<T>>(url, config);
-    return response.data.data || response.data;
-  }
-
-  // File upload
-  async uploadFile<T>(url: string, file: File, onProgress?: (progress: number) => void): Promise<T> {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const config: AxiosRequestConfig = {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      onUploadProgress: (progressEvent) => {
-        if (onProgress && progressEvent.total) {
-          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          onProgress(progress);
-        }
-      },
-    };
-
-    const response = await this.api.post<ApiResponse<T>>(url, formData, config);
-    return response.data.data || response.data;
-  }
-
-  // Paginated requests
-  async getPaginated<T>(
-    url: string, 
-    params?: { page?: number; limit?: number; [key: string]: any }
-  ): Promise<PaginatedResponse<T>> {
-    const response = await this.api.get<PaginatedResponse<T>>(url, { params });
-    return response.data;
-  }
-
-  // Health check
-  async healthCheck(): Promise<any> {
-    const response = await this.api.get('/health');
-    return response.data;
+    return this.api.delete(url, config);
   }
 
   getApi(): AxiosInstance {
@@ -184,23 +119,8 @@ class ApiService {
 
 // Create singleton instance
 const apiService = new ApiService();
-const api = apiService.getApi();
 
-// Add a request interceptor to include the token in headers
-api.interceptors.request.use(
-  (config) => {
-    const token = getToken();
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-export default api;
+export default apiService;
 
 // Export specific API modules
 export * from './modules/auth';

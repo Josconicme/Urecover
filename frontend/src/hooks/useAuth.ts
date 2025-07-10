@@ -1,6 +1,30 @@
 import { useState, useEffect } from 'react';
-import { signin, signup, getProfile, updateProfile, signout } from '../services/modules/auth';
+import { signin, signup, getProfile, updateProfile as updateUserProfile, signout } from '../services/modules/auth';
 import { toast } from 'react-hot-toast';
+
+interface User {
+  id: string;
+  email: string;
+  role: string;
+}
+
+interface Profile {
+  id: string;
+  email: string;
+  full_name?: string;
+  avatar_url?: string;
+  role: string;
+  phone?: string;
+  date_of_birth?: string;
+  gender?: string;
+  location?: string;
+  emergency_contact?: any;
+  preferences?: any;
+  is_active: boolean;
+  last_login?: string;
+  created_at: string;
+  updated_at: string;
+}
 
 interface AuthState {
   user: User | null;
@@ -66,7 +90,7 @@ export function useAuth() {
       toast.success('Signed in successfully!');
       return { data: response, error: null };
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Sign in failed';
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Sign in failed';
       setState(prev => ({ ...prev, loading: false, error: errorMessage }));
       toast.error(errorMessage);
       return { data: null, error: { message: errorMessage } };
@@ -100,7 +124,7 @@ export function useAuth() {
       toast.success('Account created successfully!');
       return { data: response, error: null };
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Sign up failed';
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Sign up failed';
       setState(prev => ({ ...prev, loading: false, error: errorMessage }));
       toast.error(errorMessage);
       return { data: null, error: { message: errorMessage } };
@@ -127,7 +151,7 @@ export function useAuth() {
 
   const updateProfile = async (updates: Partial<Profile>) => {
     try {
-      const updatedProfile = await updateProfile(updates);
+      const updatedProfile = await updateUserProfile(updates);
       setState(prev => ({
         ...prev,
         profile: updatedProfile,
@@ -135,7 +159,7 @@ export function useAuth() {
       toast.success('Profile updated successfully!');
       return { data: updatedProfile, error: null };
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Profile update failed';
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Profile update failed';
       toast.error(errorMessage);
       return { data: null, error: { message: errorMessage } };
     }

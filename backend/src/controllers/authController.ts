@@ -6,169 +6,233 @@ import { AuthenticatedRequest } from '../middleware/auth.js';
 
 export const authController = {
   async signup(req: Request, res: Response): Promise<void> {
-    const { email, password, fullName } = req.body;
+    try {
+      const { email, password, fullName } = req.body;
 
-    if (!email || !password) {
-      throw createError('Email and password are required', 400);
-    }
-
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName
-        }
+      if (!email || !password) {
+        throw createError('Email and password are required', 400);
       }
-    });
 
-    if (error) {
-      logger.error(`Signup error: ${error.message}`);
-      throw createError(error.message, 400);
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName
+          }
+        }
+      });
+
+      if (error) {
+        logger.error(`Signup error: ${error.message}`);
+        throw createError(error.message, 400);
+      }
+
+      res.status(201).json({
+        message: 'User created successfully',
+        user: data.user,
+        session: data.session
+      });
+    } catch (error: any) {
+      logger.error(`Signup controller error: ${error.message}`);
+      res.status(error.statusCode || 500).json({
+        error: error.message || 'Internal server error',
+        message: error.message || 'Failed to create user'
+      });
     }
-
-    res.status(201).json({
-      message: 'User created successfully',
-      user: data.user,
-      session: data.session
-    });
   },
 
   async signin(req: Request, res: Response): Promise<void> {
-    const { email, password } = req.body;
+    try {
+      const { email, password } = req.body;
 
-    if (!email || !password) {
-      throw createError('Email and password are required', 400);
+      if (!email || !password) {
+        throw createError('Email and password are required', 400);
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        logger.error(`Signin error: ${error.message}`);
+        throw createError(error.message, 401);
+      }
+
+      res.json({
+        message: 'Signed in successfully',
+        user: data.user,
+        session: data.session
+      });
+    } catch (error: any) {
+      logger.error(`Signin controller error: ${error.message}`);
+      res.status(error.statusCode || 500).json({
+        error: error.message || 'Internal server error',
+        message: error.message || 'Failed to sign in'
+      });
     }
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-
-    if (error) {
-      logger.error(`Signin error: ${error.message}`);
-      throw createError(error.message, 401);
-    }
-
-    res.json({
-      message: 'Signed in successfully',
-      user: data.user,
-      session: data.session
-    });
   },
 
   async signout(req: Request, res: Response): Promise<void> {
-    const { error } = await supabase.auth.signOut();
+    try {
+      const { error } = await supabase.auth.signOut();
 
-    if (error) {
-      logger.error(`Signout error: ${error.message}`);
-      throw createError(error.message, 400);
+      if (error) {
+        logger.error(`Signout error: ${error.message}`);
+        throw createError(error.message, 400);
+      }
+
+      res.json({ message: 'Signed out successfully' });
+    } catch (error: any) {
+      logger.error(`Signout controller error: ${error.message}`);
+      res.status(error.statusCode || 500).json({
+        error: error.message || 'Internal server error',
+        message: error.message || 'Failed to sign out'
+      });
     }
-
-    res.json({ message: 'Signed out successfully' });
   },
 
   async refresh(req: Request, res: Response): Promise<void> {
-    const { refreshToken } = req.body;
+    try {
+      const { refreshToken } = req.body;
 
-    if (!refreshToken) {
-      throw createError('Refresh token is required', 400);
+      if (!refreshToken) {
+        throw createError('Refresh token is required', 400);
+      }
+
+      const { data, error } = await supabase.auth.refreshSession({
+        refresh_token: refreshToken
+      });
+
+      if (error) {
+        logger.error(`Token refresh error: ${error.message}`);
+        throw createError(error.message, 401);
+      }
+
+      res.json({
+        message: 'Token refreshed successfully',
+        session: data.session
+      });
+    } catch (error: any) {
+      logger.error(`Refresh controller error: ${error.message}`);
+      res.status(error.statusCode || 500).json({
+        error: error.message || 'Internal server error',
+        message: error.message || 'Failed to refresh token'
+      });
     }
-
-    const { data, error } = await supabase.auth.refreshSession({
-      refresh_token: refreshToken
-    });
-
-    if (error) {
-      logger.error(`Token refresh error: ${error.message}`);
-      throw createError(error.message, 401);
-    }
-
-    res.json({
-      message: 'Token refreshed successfully',
-      session: data.session
-    });
   },
 
   async forgotPassword(req: Request, res: Response): Promise<void> {
-    const { email } = req.body;
+    try {
+      const { email } = req.body;
 
-    if (!email) {
-      throw createError('Email is required', 400);
+      if (!email) {
+        throw createError('Email is required', 400);
+      }
+
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+
+      if (error) {
+        logger.error(`Password reset error: ${error.message}`);
+        throw createError(error.message, 400);
+      }
+
+      res.json({ message: 'Password reset email sent' });
+    } catch (error: any) {
+      logger.error(`Forgot password controller error: ${error.message}`);
+      res.status(error.statusCode || 500).json({
+        error: error.message || 'Internal server error',
+        message: error.message || 'Failed to send password reset email'
+      });
     }
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
-
-    if (error) {
-      logger.error(`Password reset error: ${error.message}`);
-      throw createError(error.message, 400);
-    }
-
-    res.json({ message: 'Password reset email sent' });
   },
 
   async resetPassword(req: Request, res: Response): Promise<void> {
-    const { password, accessToken } = req.body;
+    try {
+      const { password, accessToken } = req.body;
 
-    if (!password || !accessToken) {
-      throw createError('Password and access token are required', 400);
+      if (!password || !accessToken) {
+        throw createError('Password and access token are required', 400);
+      }
+
+      const { error } = await supabase.auth.updateUser({
+        password
+      });
+
+      if (error) {
+        logger.error(`Password update error: ${error.message}`);
+        throw createError(error.message, 400);
+      }
+
+      res.json({ message: 'Password updated successfully' });
+    } catch (error: any) {
+      logger.error(`Reset password controller error: ${error.message}`);
+      res.status(error.statusCode || 500).json({
+        error: error.message || 'Internal server error',
+        message: error.message || 'Failed to reset password'
+      });
     }
-
-    const { error } = await supabase.auth.updateUser({
-      password
-    });
-
-    if (error) {
-      logger.error(`Password update error: ${error.message}`);
-      throw createError(error.message, 400);
-    }
-
-    res.json({ message: 'Password updated successfully' });
   },
 
   async getProfile(req: AuthenticatedRequest, res: Response): Promise<void> {
-    if (!req.user) {
-      throw createError('User not authenticated', 401);
+    try {
+      if (!req.user) {
+        throw createError('User not authenticated', 401);
+      }
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', req.user.id)
+        .single();
+
+      if (error) {
+        logger.error(`Profile fetch error: ${error.message}`);
+        throw createError('Error fetching profile', 500);
+      }
+
+      res.json({ profile: data });
+    } catch (error: any) {
+      logger.error(`Get profile controller error: ${error.message}`);
+      res.status(error.statusCode || 500).json({
+        error: error.message || 'Internal server error',
+        message: error.message || 'Failed to fetch profile'
+      });
     }
-
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', req.user.id)
-      .single();
-
-    if (error) {
-      logger.error(`Profile fetch error: ${error.message}`);
-      throw createError('Error fetching profile', 500);
-    }
-
-    res.json({ profile: data });
   },
 
   async updateProfile(req: AuthenticatedRequest, res: Response): Promise<void> {
-    if (!req.user) {
-      throw createError('User not authenticated', 401);
+    try {
+      if (!req.user) {
+        throw createError('User not authenticated', 401);
+      }
+
+      const updates = req.body;
+      updates.updated_at = new Date().toISOString();
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', req.user.id)
+        .select()
+        .single();
+
+      if (error) {
+        logger.error(`Profile update error: ${error.message}`);
+        throw createError('Error updating profile', 500);
+      }
+
+      res.json({
+        message: 'Profile updated successfully',
+        profile: data
+      });
+    } catch (error: any) {
+      logger.error(`Update profile controller error: ${error.message}`);
+      res.status(error.statusCode || 500).json({
+        error: error.message || 'Internal server error',
+        message: error.message || 'Failed to update profile'
+      });
     }
-
-    const updates = req.body;
-    updates.updated_at = new Date().toISOString();
-
-    const { data, error } = await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', req.user.id)
-      .select()
-      .single();
-
-    if (error) {
-      logger.error(`Profile update error: ${error.message}`);
-      throw createError('Error updating profile', 500);
-    }
-
-    res.json({
-      message: 'Profile updated successfully',
-      profile: data
-    });
   }
 };
