@@ -15,12 +15,15 @@ class ApiService {
   constructor() {
     this.baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api/v1';
     
+    console.log('API Base URL:', this.baseURL);
+    
     this.api = axios.create({
       baseURL: this.baseURL,
-      timeout: 10000,
+      timeout: 15000,
       headers: {
         'Content-Type': 'application/json',
       },
+      withCredentials: false,
     });
 
     this.setupInterceptors();
@@ -34,9 +37,14 @@ class ApiService {
         if (token) {
           config.headers['Authorization'] = `Bearer ${token}`;
         }
+        
+        console.log(`Making ${config.method?.toUpperCase()} request to:`, config.url);
+        console.log('Request headers:', config.headers);
+        
         return config;
       },
       (error) => {
+        console.error('Request interceptor error:', error);
         return Promise.reject(error);
       }
     );
@@ -44,9 +52,12 @@ class ApiService {
     // Response interceptor
     this.api.interceptors.response.use(
       (response: AxiosResponse) => {
+        console.log('Response received:', response.status, response.data);
         return response.data;
       },
       async (error) => {
+        console.error('Response interceptor error:', error);
+        
         const originalRequest = error.config;
 
         // Handle 401 errors (token expired)
@@ -56,6 +67,7 @@ class ApiService {
           try {
             const refreshToken = localStorage.getItem('refresh_token');
             if (refreshToken) {
+              console.log('Attempting to refresh token...');
               const response = await axios.post(`${this.baseURL}/auth/refresh`, {
                 refreshToken
               });
@@ -69,6 +81,7 @@ class ApiService {
               return this.api(originalRequest);
             }
           } catch (refreshError) {
+            console.error('Token refresh failed:', refreshError);
             // Refresh failed, redirect to login
             localStorage.removeItem('access_token');
             localStorage.removeItem('refresh_token');
@@ -78,7 +91,17 @@ class ApiService {
         }
 
         // Handle other errors
-        const message = error.response?.data?.message || error.response?.data?.error || error.message || 'An error occurred';
+        const message = error.response?.data?.message || 
+                       error.response?.data?.error || 
+                       error.message || 
+                       'An error occurred';
+        
+        console.error('API Error:', {
+          status: error.response?.status,
+          message,
+          url: error.config?.url,
+          method: error.config?.method
+        });
         
         // Don't show toast for certain errors
         const silentErrors = [401, 403];

@@ -45,13 +45,33 @@ app.use(helmet({
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173', 'http://localhost:3000'],
+  origin: function (origin: any, callback: any) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:3000'
+    ];
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      logger.warn(`CORS blocked origin: ${origin}`);
+      callback(null, true); // Allow for development
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 };
 app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
 
 // Rate limiting
 const limiter = rateLimit({
@@ -95,7 +115,7 @@ app.use(`/api/${apiVersion}/counsellors`, authMiddleware, counsellorRoutes);
 app.use(`/api/${apiVersion}/appointments`, authMiddleware, appointmentRoutes);
 app.use(`/api/${apiVersion}/wellness`, authMiddleware, wellnessRoutes);
 app.use(`/api/${apiVersion}/blogs`, authMiddleware, blogRoutes);
-app.use(`/api/${apiVersion}/articles`, authMiddleware, articleRoutes);
+app.use(`/api/${apiVersion}/articles`, authMiddleware, articlesRoutes);
 app.use(`/api/${apiVersion}/resources`, authMiddleware, resourceRoutes);
 app.use(`/api/${apiVersion}/messages`, authMiddleware, messageRoutes);
 app.use(`/api/${apiVersion}/notifications`, authMiddleware, notificationRoutes);
@@ -105,6 +125,7 @@ app.use(`/api/${apiVersion}/admin`, authMiddleware, adminRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
+  logger.warn(`404 - Route not found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({
     error: 'Not Found',
     message: `Route ${req.originalUrl} not found`,

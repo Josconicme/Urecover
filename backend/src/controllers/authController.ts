@@ -9,8 +9,15 @@ export const authController = {
     try {
       const { email, password, fullName } = req.body;
 
+      logger.info(`Signup attempt for email: ${email}`);
+
       if (!email || !password) {
-        throw createError('Email and password are required', 400);
+        logger.warn('Signup failed: Missing email or password');
+        res.status(400).json({
+          error: 'Email and password are required',
+          message: 'Email and password are required'
+        });
+        return;
       }
 
       const { data, error } = await supabase.auth.signUp({
@@ -18,26 +25,45 @@ export const authController = {
         password,
         options: {
           data: {
-            full_name: fullName
+            full_name: fullName || ''
           }
         }
       });
 
       if (error) {
-        logger.error(`Signup error: ${error.message}`);
-        throw createError(error.message, 400);
+        logger.error(`Supabase signup error: ${error.message}`);
+        res.status(400).json({
+          error: error.message,
+          message: error.message
+        });
+        return;
       }
+
+      if (!data.user) {
+        logger.error('Signup failed: No user data returned');
+        res.status(400).json({
+          error: 'Failed to create user',
+          message: 'Failed to create user'
+        });
+        return;
+      }
+
+      logger.info(`User created successfully: ${data.user.id}`);
 
       res.status(201).json({
         message: 'User created successfully',
-        user: data.user,
+        user: {
+          id: data.user.id,
+          email: data.user.email,
+          role: 'user'
+        },
         session: data.session
       });
     } catch (error: any) {
-      logger.error(`Signup controller error: ${error.message}`);
-      res.status(error.statusCode || 500).json({
-        error: error.message || 'Internal server error',
-        message: error.message || 'Failed to create user'
+      logger.error(`Signup controller error: ${error.message}`, error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to create user'
       });
     }
   },
@@ -46,8 +72,15 @@ export const authController = {
     try {
       const { email, password } = req.body;
 
+      logger.info(`Signin attempt for email: ${email}`);
+
       if (!email || !password) {
-        throw createError('Email and password are required', 400);
+        logger.warn('Signin failed: Missing email or password');
+        res.status(400).json({
+          error: 'Email and password are required',
+          message: 'Email and password are required'
+        });
+        return;
       }
 
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -56,20 +89,55 @@ export const authController = {
       });
 
       if (error) {
-        logger.error(`Signin error: ${error.message}`);
-        throw createError(error.message, 401);
+        logger.error(`Supabase signin error: ${error.message}`);
+        res.status(401).json({
+          error: error.message,
+          message: error.message
+        });
+        return;
       }
+
+      if (!data.user || !data.session) {
+        logger.error('Signin failed: No user or session data returned');
+        res.status(401).json({
+          error: 'Invalid credentials',
+          message: 'Invalid email or password'
+        });
+        return;
+      }
+
+      // Get user profile for role
+      let userRole = 'user';
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+        
+        if (profile?.role) {
+          userRole = profile.role;
+        }
+      } catch (profileError) {
+        logger.warn(`Could not fetch user role: ${profileError}`);
+      }
+
+      logger.info(`User signed in successfully: ${data.user.id}`);
 
       res.json({
         message: 'Signed in successfully',
-        user: data.user,
+        user: {
+          id: data.user.id,
+          email: data.user.email,
+          role: userRole
+        },
         session: data.session
       });
     } catch (error: any) {
-      logger.error(`Signin controller error: ${error.message}`);
-      res.status(error.statusCode || 500).json({
-        error: error.message || 'Internal server error',
-        message: error.message || 'Failed to sign in'
+      logger.error(`Signin controller error: ${error.message}`, error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to sign in'
       });
     }
   },
@@ -80,15 +148,19 @@ export const authController = {
 
       if (error) {
         logger.error(`Signout error: ${error.message}`);
-        throw createError(error.message, 400);
+        res.status(400).json({
+          error: error.message,
+          message: error.message
+        });
+        return;
       }
 
       res.json({ message: 'Signed out successfully' });
     } catch (error: any) {
-      logger.error(`Signout controller error: ${error.message}`);
-      res.status(error.statusCode || 500).json({
-        error: error.message || 'Internal server error',
-        message: error.message || 'Failed to sign out'
+      logger.error(`Signout controller error: ${error.message}`, error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to sign out'
       });
     }
   },
@@ -98,7 +170,11 @@ export const authController = {
       const { refreshToken } = req.body;
 
       if (!refreshToken) {
-        throw createError('Refresh token is required', 400);
+        res.status(400).json({
+          error: 'Refresh token is required',
+          message: 'Refresh token is required'
+        });
+        return;
       }
 
       const { data, error } = await supabase.auth.refreshSession({
@@ -107,7 +183,11 @@ export const authController = {
 
       if (error) {
         logger.error(`Token refresh error: ${error.message}`);
-        throw createError(error.message, 401);
+        res.status(401).json({
+          error: error.message,
+          message: error.message
+        });
+        return;
       }
 
       res.json({
@@ -115,10 +195,10 @@ export const authController = {
         session: data.session
       });
     } catch (error: any) {
-      logger.error(`Refresh controller error: ${error.message}`);
-      res.status(error.statusCode || 500).json({
-        error: error.message || 'Internal server error',
-        message: error.message || 'Failed to refresh token'
+      logger.error(`Refresh controller error: ${error.message}`, error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to refresh token'
       });
     }
   },
@@ -128,22 +208,30 @@ export const authController = {
       const { email } = req.body;
 
       if (!email) {
-        throw createError('Email is required', 400);
+        res.status(400).json({
+          error: 'Email is required',
+          message: 'Email is required'
+        });
+        return;
       }
 
       const { error } = await supabase.auth.resetPasswordForEmail(email);
 
       if (error) {
         logger.error(`Password reset error: ${error.message}`);
-        throw createError(error.message, 400);
+        res.status(400).json({
+          error: error.message,
+          message: error.message
+        });
+        return;
       }
 
       res.json({ message: 'Password reset email sent' });
     } catch (error: any) {
-      logger.error(`Forgot password controller error: ${error.message}`);
-      res.status(error.statusCode || 500).json({
-        error: error.message || 'Internal server error',
-        message: error.message || 'Failed to send password reset email'
+      logger.error(`Forgot password controller error: ${error.message}`, error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to send password reset email'
       });
     }
   },
@@ -153,7 +241,11 @@ export const authController = {
       const { password, accessToken } = req.body;
 
       if (!password || !accessToken) {
-        throw createError('Password and access token are required', 400);
+        res.status(400).json({
+          error: 'Password and access token are required',
+          message: 'Password and access token are required'
+        });
+        return;
       }
 
       const { error } = await supabase.auth.updateUser({
@@ -162,15 +254,19 @@ export const authController = {
 
       if (error) {
         logger.error(`Password update error: ${error.message}`);
-        throw createError(error.message, 400);
+        res.status(400).json({
+          error: error.message,
+          message: error.message
+        });
+        return;
       }
 
       res.json({ message: 'Password updated successfully' });
     } catch (error: any) {
-      logger.error(`Reset password controller error: ${error.message}`);
-      res.status(error.statusCode || 500).json({
-        error: error.message || 'Internal server error',
-        message: error.message || 'Failed to reset password'
+      logger.error(`Reset password controller error: ${error.message}`, error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to reset password'
       });
     }
   },
@@ -178,7 +274,11 @@ export const authController = {
   async getProfile(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        throw createError('User not authenticated', 401);
+        res.status(401).json({
+          error: 'User not authenticated',
+          message: 'User not authenticated'
+        });
+        return;
       }
 
       const { data, error } = await supabase
@@ -189,15 +289,47 @@ export const authController = {
 
       if (error) {
         logger.error(`Profile fetch error: ${error.message}`);
-        throw createError('Error fetching profile', 500);
+        
+        // If profile doesn't exist, create one
+        if (error.code === 'PGRST116') {
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              id: req.user.id,
+              email: req.user.email,
+              role: req.user.role || 'user',
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .select()
+            .single();
+
+          if (createError) {
+            logger.error(`Profile creation error: ${createError.message}`);
+            res.status(500).json({
+              error: 'Error creating profile',
+              message: 'Error creating profile'
+            });
+            return;
+          }
+
+          res.json({ profile: newProfile });
+          return;
+        }
+
+        res.status(500).json({
+          error: 'Error fetching profile',
+          message: 'Error fetching profile'
+        });
+        return;
       }
 
       res.json({ profile: data });
     } catch (error: any) {
-      logger.error(`Get profile controller error: ${error.message}`);
-      res.status(error.statusCode || 500).json({
-        error: error.message || 'Internal server error',
-        message: error.message || 'Failed to fetch profile'
+      logger.error(`Get profile controller error: ${error.message}`, error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to fetch profile'
       });
     }
   },
@@ -205,7 +337,11 @@ export const authController = {
   async updateProfile(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       if (!req.user) {
-        throw createError('User not authenticated', 401);
+        res.status(401).json({
+          error: 'User not authenticated',
+          message: 'User not authenticated'
+        });
+        return;
       }
 
       const updates = req.body;
@@ -220,7 +356,11 @@ export const authController = {
 
       if (error) {
         logger.error(`Profile update error: ${error.message}`);
-        throw createError('Error updating profile', 500);
+        res.status(500).json({
+          error: 'Error updating profile',
+          message: 'Error updating profile'
+        });
+        return;
       }
 
       res.json({
@@ -228,10 +368,10 @@ export const authController = {
         profile: data
       });
     } catch (error: any) {
-      logger.error(`Update profile controller error: ${error.message}`);
-      res.status(error.statusCode || 500).json({
-        error: error.message || 'Internal server error',
-        message: error.message || 'Failed to update profile'
+      logger.error(`Update profile controller error: ${error.message}`, error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to update profile'
       });
     }
   }

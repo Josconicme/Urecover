@@ -1,4 +1,4 @@
-import api from '../api.js';
+import apiService from '../api.js';
 
 export interface User {
   id: string;
@@ -40,30 +40,60 @@ export interface AuthResponse {
 }
 
 export const signin = async (payload: AuthPayload): Promise<AuthResponse> => {
-  const response = await api.post<AuthResponse>('/auth/signin', payload);
-  return response;
+  try {
+    const response = await apiService.post<AuthResponse>('/auth/signin', payload);
+    return response;
+  } catch (error: any) {
+    console.error('Signin API error:', error);
+    throw error;
+  }
 };
 
 export const signup = async (payload: AuthPayload): Promise<AuthResponse> => {
-  const response = await api.post<AuthResponse>('/auth/signup', payload);
-  return response;
+  try {
+    const response = await apiService.post<AuthResponse>('/auth/signup', payload);
+    return response;
+  } catch (error: any) {
+    console.error('Signup API error:', error);
+    throw error;
+  }
 };
 
 export const getProfile = async (): Promise<Profile> => {
-  const response = await api.get<{ profile: Profile }>('/auth/profile');
-  return response.profile;
+  try {
+    const response = await apiService.get<{ profile: Profile }>('/auth/profile');
+    return response.profile;
+  } catch (error: any) {
+    console.error('Get profile API error:', error);
+    throw error;
+  }
 };
 
 export const updateProfile = async (payload: Partial<Profile>): Promise<Profile> => {
-  const response = await api.put<{ profile: Profile }>('/auth/profile', payload);
-  return response.profile;
+  try {
+    const response = await apiService.put<{ profile: Profile }>('/auth/profile', payload);
+    return response.profile;
+  } catch (error: any) {
+    console.error('Update profile API error:', error);
+    throw error;
+  }
 };
 
 export const signout = async (): Promise<void> => {
-  await api.post('/auth/signout');
+  try {
+    await apiService.post('/auth/signout');
+  } catch (error: any) {
+    console.error('Signout API error:', error);
+    throw error;
+  }
 };
 
 export const refreshToken = async (refreshToken: string): Promise<AuthResponse> => {
-  const response = await api.post<AuthResponse>('/auth/refresh', { refreshToken });
-  return response;
+  try {
+    const response = await apiService.post<AuthResponse>('/auth/refresh', { refreshToken });
+    return response;
+  } catch (error: any) {
+    console.error('Refresh token API error:', error);
+    throw error;
+  }
 };
